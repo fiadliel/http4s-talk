@@ -21,31 +21,26 @@ object DemoService {
   implicit def circeJsonEncoder[A](implicit encoder: Encoder[A]) = org.http4s.circe.jsonEncoderOf[A]
 
   def service(xa: Transactor[Task]) = HttpService {
-    case GET -> Root / "stream" => Task.fork {
+    case GET -> Root / "stream" =>
       Ok(PersonDAO.streamPeople.transact(xa).map(p => p.id + "\n"))
-    }(dbExecutor)
 
-    case GET -> Root / "people" => Task.fork {
+    case GET -> Root / "people" =>
       Ok(PersonDAO.listPeople.transact(xa))
-    }(dbExecutor)
 
-    case GET -> Root / "people" / IntVar(id) => Task.fork {
+    case GET -> Root / "people" / IntVar(id) =>
       for {
         person <- PersonDAO.getPerson(id).transact(xa)
         result <- person.fold(NotFound())(Ok(_))
       } yield result
-    }(dbExecutor)
 
-    case req @ PUT -> Root / "people" / IntVar(id) => Task.fork {
+    case req@PUT -> Root / "people" / IntVar(id) =>
       req.decode[PersonForm] { form =>
         Ok(PersonDAO.updatePerson(id, form.firstName, form.familyName).transact(xa))
       }
-    }(dbExecutor)
 
-    case req @ POST -> Root / "people" => Task.fork {
+    case req@POST -> Root / "people" =>
       req.decode[PersonForm] { form =>
         Ok(PersonDAO.insertPerson(form.firstName, form.familyName).transact(xa))
       }
-    }(dbExecutor)
-  }
+  }.mapK(Task.fork(_)(dbExecutor))
 }
