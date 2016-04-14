@@ -22,7 +22,7 @@ object DemoService {
 
   def service(xa: Transactor[Task]) = HttpService {
     case GET -> Root / "stream" =>
-      Task.fork(Ok(PersonDAO.streamPeople.transact(xa).map(p => p.id + "\n").run))(dbExecutor)
+      Ok(Task.fork(PersonDAO.streamPeople.transact(xa).map(p => p.id + "\n").run)(dbExecutor))
 
     case GET -> Root / "people" =>
       Ok(Task.fork(PersonDAO.listPeople.transact(xa))(dbExecutor))
