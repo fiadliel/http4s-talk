@@ -33,12 +33,12 @@ object DemoService {
         result <- person.fold(NotFound())(Ok(_))
       } yield result
 
-    case req@PUT -> Root / "people" / IntVar(id) =>
+    case req @ PUT -> Root / "people" / IntVar(id) =>
       req.decode[PersonForm] { form =>
         Ok(PersonDAO.updatePerson(id, form.firstName, form.familyName).transact(xa))
       }
 
-    case req@POST -> Root / "people" =>
+    case req @ POST -> Root / "people" =>
       req.decode[PersonForm] { form =>
         Ok(PersonDAO.insertPerson(form.firstName, form.familyName).transact(xa))
       }
