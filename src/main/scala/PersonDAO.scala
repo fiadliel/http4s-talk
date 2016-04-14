@@ -3,6 +3,8 @@ package demo
 import java.time.Instant
 
 import doobie.imports._
+
+import scalaz.concurrent.Task
 import scalaz.stream.Process
 
 object PersonDAO {
