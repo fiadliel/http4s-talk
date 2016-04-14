@@ -22,8 +22,7 @@ object DemoService {
 
   def service(xa: Transactor[Task]) = HttpService {
     case GET -> Root / "stream" =>
-      val stream = Process.eval(Task()(dbExecutor)) flatMap { _ => PersonDAO.streamPeople.transact(xa) }
-      Ok(stream.map(p => p.id + "\n"))
+      Task.fork(Ok(PersonDAO.streamPeople.transact(xa).map(p => p.id + "\n").run))(dbExecutor)
 
     case GET -> Root / "people" =>
       Ok(Task.fork(PersonDAO.listPeople.transact(xa))(dbExecutor))
